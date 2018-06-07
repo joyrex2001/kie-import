@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"magnetron/joyrex2001/kie-import/view"
+	"magnetron/joyrex2001/kie-import/clone"
 )
 
 var cfgFile string
@@ -27,7 +27,7 @@ One of the issues that comes with cloning and automating this repo, is that
 it is based on username / password combinations, and uses an legacy key
 algorithm. This will make the configuration, and automation a bit more
 challenging. KIE import will make this easier.`,
-	Run: view.Main,
+	Run: clone.Main,
 }
 
 func init() {
