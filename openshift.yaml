@@ -121,6 +121,10 @@ objects:
           value: ${DROOLS_GIT_SSH_PORT}
         - name: "DROOLS_GIT_REPO"
           value: ${DROOLS_GIT_REPO}
+        - name: "DROOLS_PROJECT"
+          value: ${DROOLS_PROJECT}
+        - name: "DEP_KIE_API_VERSION"
+          value: "6.4.0.Final" ## hardcoded...
         - name: "GIT_USERNAME"
           valueFrom:
             secretKeyRef:

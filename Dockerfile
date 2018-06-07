@@ -13,8 +13,11 @@ ENV GIT_USERNAME=${GIT_USERNAME}
 ENV GIT_PASSWORD=${GIT_PASSWORD}
 
 ADD . /go/src/${CODE}/
-RUN cd /go/src/${CODE} && go build -o /app/main
-RUN touch ${SSH_KNOWN_HOSTS} && /app/main
+RUN cd /go/src/${CODE}       && \
+    go build -o /app/main    && \
+    touch ${SSH_KNOWN_HOSTS} && \
+    /app/main                && \
+    ./hack/add_dep.pl ${GIT_DESTINATION}/${DROOLS_PROJECT}/pom.xml ${DEP_KIE_API_VERSION}
 
 WORKDIR /app
 CMD ["./main"]
