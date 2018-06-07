@@ -1,9 +1,9 @@
 
 FROM docker.io/golang:1.10
 
-ARG CODE=magnetron/joyrex2001/kie-import
+ARG CODE=github.com/joyrex2001/kie-import
 
-ENV GIT_DESTINATION=/import
+ENV GIT_DESTINATION=/import/${DROOLS_GIT_REPO}
 ENV SSH_KNOWN_HOSTS=/tmp/known_hosts
 
 ENV DROOLS_HOST=${DROOLS_HOST}
@@ -19,5 +19,4 @@ RUN cd /go/src/${CODE}       && \
     /app/main                && \
     ./hack/add_dep.pl ${GIT_DESTINATION}/${DROOLS_PROJECT}/pom.xml ${DEP_KIE_API_VERSION}
 
-WORKDIR /app
-CMD ["./main"]
+CMD ["/app/main"]

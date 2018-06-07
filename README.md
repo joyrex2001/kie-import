@@ -26,7 +26,7 @@ parameters (as environment variables):
 
 ## Using in OpenShift build
 
-An OpenShift template, based on the ```decisionserver64-basic-s2``` template
+An OpenShift template, based on the ```decisionserver64-basic-s2i``` template
 is included. This template adds an intermediate imagestream which will clone
 the code from the workbench repo first, before continuing with the actual
 build.

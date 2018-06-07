@@ -52,7 +52,7 @@ sub main {
     print STDERR "Info: dependencies already available\n";
   } else {
     print STDERR "Info: adding dependencies tag\n";
-    $pom =~ s#</project>#<dependencies></dependencies></project>#is;
+    $pom =~ s#<repositories>#<dependencies></dependencies><repositories>#is;
   }
 
   if (hasdep($pom,$artifact)) {

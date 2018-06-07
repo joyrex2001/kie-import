@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"magnetron/joyrex2001/kie-import/clone"
+	"github.com/joyrex2001/kie-import/clone"
 )
 
 var cfgFile string
