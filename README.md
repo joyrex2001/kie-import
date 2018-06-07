@@ -24,6 +24,35 @@ parameters (as environment variables):
 * GIT_PASSWORD
 * DESTINATION_FOLDER
 
+## Using in OpenShift build
+
+An OpenShift template, based on the ```decisionserver64-basic-s2``` template
+is included. This template adds an intermediate imagestream which will clone
+the code from the workbench repo first, before continuing with the actual
+build.
+
+Create the project with:
+
+```bash
+oc process -f openshift.yaml \
+    -p APPLICATION_NAME="loan-demo" \
+    -p KIE_SERVER_USER="brmsAdmin" \
+    -p KIE_SERVER_PASSWORD="jbossbrms@01" \
+    -p KIE_CONTAINER_DEPLOYMENT="container-loan10=com.redhat.demos:loandemo:1.0" \
+    -p DROOLS_HOST="businesscentral" \
+    -p DROOLS_GIT_REPO="loan" \
+    -p DROOLS_PROJECT="loandemo" \
+    -p GIT_USERNAME="erics" \
+    -p GIT_PASSWORD='jbossbrms1!' | oc create -f -
+```
+
+And start the build:
+
+```bash
+oc start-build loan-demo --from-dir=.
+```
+
 ## References
 
+* [Micro-rules on OpenShift: The CoolStore just became even cooler!](https://developers.redhat.com/blog/2016/10/05/micro-rules-on-openshift-the-coolstore-just-became-even-cooler/)
 * [Your first Business Rules application on OpenShift: from Zero to Hero in 30 minutes](https://developers.redhat.com/blog/2017/06/13/your-first-business-rules-application-on-openshift-from-zero-to-hero-in-30-minutes/)

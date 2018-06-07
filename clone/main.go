@@ -96,6 +96,8 @@ func Main(cmd *cobra.Command, args []string) {
 		Password: passwd,
 	}
 
+	fmt.Printf("Cloning %s to %s\n", repo, dest)
+
 	r, err := git.PlainClone(dest, false, &git.CloneOptions{
 		URL:  repo,
 		Auth: auth,

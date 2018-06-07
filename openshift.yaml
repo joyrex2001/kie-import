@@ -1,0 +1,270 @@
+---
+apiVersion: v1
+kind: Template
+labels:
+  template: asciime
+parameters:
+- name: APPLICATION_NAME
+  description: The name assigned to all of the frontend objects defined in this template.
+  displayName: Name
+  required: true
+  value: kieserver
+
+- name: DROOLS_HOST
+  description: The host of the drools git server.
+  displayName: Drools host
+  required: true
+  value: ''
+
+- name: DROOLS_GIT_SSH_PORT
+  description: The port of the drools ssh git server.
+  displayName: Drools ssh port
+  required: true
+  value: '8001'
+
+- name: DROOLS_GIT_REPO
+  description: The git repository to be cloned.
+  displayName: Drools git repo
+  required: true
+  value: ''
+
+- name: DROOLS_PROJECT
+  description: The name of the project in the repository.
+  displayName: Drools project
+  required: true
+  value: ''
+
+- name: GIT_USERNAME
+  description: The name assigned to all of the frontend objects defined in this template.
+  displayName: Git user name
+  required: true
+  value: ""
+
+- name: GIT_PASSWORD
+  description: The name assigned to all of the frontend objects defined in this template.
+  displayName: Git user name
+  required: true
+  value: ""
+
+- name: MAVEN_MIRROR_URL
+  description: Maven mirror to use for S2I builds
+  displayName: Maven mirror URL
+
+- name: ARTIFACT_DIR
+  description: List of directories from which archives will be copied into the deployment
+    folder. If unspecified, all archives in /target will be copied.
+
+- name: KIE_CONTAINER_DEPLOYMENT
+  description: 'The KIE Container deployment configuration in format: containerId=groupId:artifactId:version|c2=g2:a2:v2'
+  displayName: KIE Container Deployment
+  value: decisionserver-hellorules=org.openshift.quickstarts:decisionserver-hellorules:1.3.0.Final
+
+- name: KIE_SERVER_USER
+  description: The user name to access the KIE Server REST or JMS interface.
+  displayName: KIE Server Username
+  value: kieserver
+
+- name: KIE_SERVER_PASSWORD
+  description: The password to access the KIE Server REST or JMS interface. Must be
+    different than username; must not be root, admin, or administrator; must contain
+    at least 8 characters, 1 alphabetic character(s), 1 digit(s), and 1 non-alphanumeric
+    symbol(s).
+  displayName: KIE Server Password
+  from: '[a-zA-Z]{6}[0-9]{1}!'
+  generate: expression
+
+- name: HORNETQ_QUEUES
+  description: Queue names
+  displayName: Queues
+
+- name: HORNETQ_TOPICS
+  description: Topic names
+  displayName: Topics
+
+- name: HORNETQ_CLUSTER_PASSWORD
+  description: HornetQ cluster admin password
+  displayName: HornetQ Password
+  from: '[a-zA-Z0-9]{8}'
+  generate: expression
+  required: true
+
+- name: IMAGE_STREAM_NAMESPACE
+  description: Namespace in which the ImageStreams for Red Hat Middleware images are
+    installed. These ImageStreams are normally installed in the openshift namespace.
+    You should only need to modify this if you've installed the ImageStreams in a
+    different namespace/project.
+  displayName: ImageStream Namespace
+  required: true
+  value: openshift
+
+objects:
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      app: "${APPLICATION_NAME}"
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: "${APPLICATION_NAME}-import:latest"
+    source:
+      type: "Binary"
+    strategy:
+      type: Docker
+      dockerStrategy:
+        env:
+        - name: "DROOLS_HOST"
+          value: ${DROOLS_HOST}
+        - name: "DROOLS_GIT_SSH_PORT"
+          value: ${DROOLS_GIT_SSH_PORT}
+        - name: "DROOLS_GIT_REPO"
+          value: ${DROOLS_GIT_REPO}
+        - name: "GIT_USERNAME"
+          valueFrom:
+            secretKeyRef:
+              key: git-username
+              name: "${APPLICATION_NAME}"
+        - name: "GIT_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              key: git-password
+              name: "${APPLICATION_NAME}"
+    triggers:
+    - type: ConfigChange
+
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-build"
+    labels:
+      app: "${APPLICATION_NAME}"
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:latest
+    source:
+      images:
+      - from:
+          kind: ImageStreamTag
+          name: "${APPLICATION_NAME}-import:latest"
+        paths:
+        - sourcePath: "/import/${DROOLS_PROJECT}"
+          destinationDir: "."
+      contextDir: ""
+    strategy:
+      sourceStrategy:
+        env:
+        - name: KIE_CONTAINER_DEPLOYMENT
+          value: ${KIE_CONTAINER_DEPLOYMENT}
+        - name: MAVEN_MIRROR_URL
+          value: ${MAVEN_MIRROR_URL}
+        - name: ARTIFACT_DIR
+          value: ${ARTIFACT_DIR}
+        forcePull: true
+        from:
+          kind: ImageStreamTag
+          name: jboss-decisionserver64-openshift:1.1
+          namespace: ${IMAGE_STREAM_NAMESPACE}
+      type: Source
+    triggers:
+      - type: ImageChange
+        imageChange:
+          from:
+            kind: ImageStreamTag
+            name: "${APPLICATION_NAME}-import:latest"
+
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}-import"
+    labels:
+      app: "${APPLICATION_NAME}"
+
+- kind: ImageStream
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      app: "${APPLICATION_NAME}"
+
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: "${APPLICATION_NAME}"
+    labels:
+      app: "${APPLICATION_NAME}"
+    annotations:
+      template.openshift.io/expose-git_username: "{.data['git-username']}"
+      template.openshift.io/expose-git_password: "{.data['git-password']}"
+  stringData:
+    git-username: "${GIT_USERNAME}"
+    git-password: "${GIT_PASSWORD}"
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          application: ${APPLICATION_NAME}
+          deploymentConfig: ${APPLICATION_NAME}
+        name: ${APPLICATION_NAME}
+      spec:
+        containers:
+        - name: ${APPLICATION_NAME}
+          image: "${APPLICATION_NAME}-build:latest"
+          env:
+            - name: KIE_CONTAINER_DEPLOYMENT
+              value: ${KIE_CONTAINER_DEPLOYMENT}
+            - name: KIE_SERVER_USER
+              value: ${KIE_SERVER_USER}
+            - name: KIE_SERVER_PASSWORD
+              value: ${KIE_SERVER_PASSWORD}
+            - name: HORNETQ_CLUSTER_PASSWORD
+              value: ${HORNETQ_CLUSTER_PASSWORD}
+            - name: HORNETQ_QUEUES
+              value: ${HORNETQ_QUEUES}
+            - name: HORNETQ_TOPICS
+              value: ${HORNETQ_TOPICS}
+          imagePullPolicy: Always
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/livenessProbe.sh
+          ports:
+          - containerPort: 8778
+            name: jolokia
+            protocol: TCP
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - /opt/eap/bin/readinessProbe.sh
+          terminationGracePeriodSeconds: 60
+    triggers:
+      - type: ImageChange
+        imageChangeParams:
+          automatic: true
+          containerNames:
+            - ${APPLICATION_NAME}
+          from:
+            kind: ImageStreamTag
+            name: "${APPLICATION_NAME}:latest"
