@@ -1,4 +1,3 @@
-
 FROM docker.io/golang:1.10
 
 ARG CODE=github.com/joyrex2001/kie-import

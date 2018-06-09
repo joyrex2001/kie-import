@@ -150,14 +150,14 @@ objects:
         kind: ImageStreamTag
         name: ${APPLICATION_NAME}:latest
     source:
-      contextDir: "${DROOLS_PROJECT}"
       images:
       - from:
           kind: ImageStreamTag
           name: "${APPLICATION_NAME}-import:latest"
         paths:
-        - sourcePath: "/import/${DROOLS_GIT_REPO}"
-          destinationDir: "."
+        - sourcePath: "/import/${DROOLS_GIT_REPO}/${DROOLS_PROJECT}"
+          destinationDir: .
+      contextDir: "${DROOLS_PROJECT}"
     strategy:
       sourceStrategy:
         env:
