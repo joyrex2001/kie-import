@@ -111,6 +111,9 @@ objects:
         name: "${APPLICATION_NAME}-import:latest"
     source:
       type: "Binary"
+      secrets:
+        - secret:
+            name: ${APPLICATION_NAME}
     strategy:
       type: Docker
       dockerStrategy:
@@ -125,16 +128,6 @@ objects:
           value: ${DROOLS_PROJECT}
         - name: "DEP_KIE_API_VERSION"
           value: "6.5.0.Final-redhat-2" ## TODO: add dep should detect this automatically...
-        - name: "GIT_USERNAME"
-          valueFrom:
-            secretKeyRef:
-              key: git-username
-              name: "${APPLICATION_NAME}"
-        - name: "GIT_PASSWORD"
-          valueFrom:
-            secretKeyRef:
-              key: git-password
-              name: "${APPLICATION_NAME}"
     triggers:
     - type: ConfigChange
 
@@ -158,6 +151,7 @@ objects:
         - sourcePath: "/import/${DROOLS_GIT_REPO}/${DROOLS_PROJECT}"
           destinationDir: .
       contextDir: "${DROOLS_PROJECT}"
+      type: Image
     strategy:
       sourceStrategy:
         env:
