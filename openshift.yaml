@@ -126,8 +126,6 @@ objects:
           value: ${DROOLS_GIT_REPO}
         - name: "DROOLS_PROJECT"
           value: ${DROOLS_PROJECT}
-        - name: "DEP_KIE_API_VERSION"
-          value: "6.5.0.Final-redhat-2" ## TODO: add dep should detect this automatically...
     triggers:
     - type: ConfigChange
 
@@ -266,3 +264,16 @@ objects:
           from:
             kind: ImageStreamTag
             name: "${APPLICATION_NAME}:latest"
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: "${APPLICATION_NAME}"
+  spec:
+    ports:
+    - name: kie
+      port: 8080
+    selector:
+      deploymentconfig: ${APPLICATION_NAME}
