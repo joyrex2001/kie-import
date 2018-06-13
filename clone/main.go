@@ -96,6 +96,12 @@ func Main(cmd *cobra.Command, args []string) {
 		Password: passwd,
 	}
 
+	// Check if we should do some monkey patching...
+	if viper.GetBool("git.monkey-dsa2048") {
+		Info("Monkey patches applied for ignoring dsa signature checking")
+		PatchDsa2048()
+	}
+
 	fmt.Printf("Cloning %s to %s\n", repo, dest)
 
 	r, err := git.PlainClone(dest, false, &git.CloneOptions{

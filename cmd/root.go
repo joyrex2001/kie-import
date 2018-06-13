@@ -39,18 +39,21 @@ func init() {
 	rootCmd.PersistentFlags().String("user", "", "username for login to git repository")
 	rootCmd.PersistentFlags().String("password", "", "password for login to git repository")
 	rootCmd.PersistentFlags().String("destination", "/tmp/kie-import", "destination folder for cloned repo")
+	rootCmd.PersistentFlags().Bool("monkey-dsa2048", false, "disable dsa 2048 signature check via monkey patching (experimental)")
 	viper.BindPFlag("drools.host", rootCmd.PersistentFlags().Lookup("drools-host"))
 	viper.BindPFlag("drools.git_ssh_port", rootCmd.PersistentFlags().Lookup("drools-git-ssh-port"))
 	viper.BindPFlag("drools.git_repo", rootCmd.PersistentFlags().Lookup("drools-git-repo"))
 	viper.BindPFlag("git.user", rootCmd.PersistentFlags().Lookup("user"))
 	viper.BindPFlag("git.password", rootCmd.PersistentFlags().Lookup("password"))
 	viper.BindPFlag("git.destination", rootCmd.PersistentFlags().Lookup("destination"))
+	viper.BindPFlag("git.monkey-dsa2048", rootCmd.PersistentFlags().Lookup("monkey-dsa2048"))
 	viper.BindEnv("drools.host", "DROOLS_HOST")
 	viper.BindEnv("drools.git_ssh_port", "DROOLS_GIT_SSH_PORT")
 	viper.BindEnv("drools.git_repo", "DROOLS_GIT_REPO")
 	viper.BindEnv("git.user", "GIT_USERNAME")
 	viper.BindEnv("git.password", "GIT_PASSWORD")
 	viper.BindEnv("git.destination", "GIT_DESTINATION")
+	viper.BindEnv("git.monkey-dsa2048", "GIT_MONKEY_DSA2048")
 }
 
 func initConfig() {
